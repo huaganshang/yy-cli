@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+const program = require('commander');
+
+program
+    .version(require('../package').version)
+    .usage('<command> [options]')
+
+program
+    .command('create <项目名称> [模板地址]', '创建一个新项目')
+    .alias('init')
+  
+program.parse(process.argv);

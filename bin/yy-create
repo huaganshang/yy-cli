@@ -1,0 +1,129 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+const rimraf = require('rimraf');
+const ora = require('ora');
+const chalk = require('chalk');
+const program = require('commander');
+const inquirer = require('inquirer');
+const download = require('download-git-repo');
+const spinner = ora({
+    color: 'blue',
+});
+
+let url = '',
+    projectName = '';
+const defaultTpl = 'github:huaganshang/yzone-vue#master'; //默认的模板地址
+const msg = {
+    directoryExist: '项目目录已存在，是否要覆盖?',
+    nameIsEmpty: '请输入要创建的项目名称',
+    start: '开始创建项目',
+    buliding: '创建中，请稍候...',
+    fail: '创建项目失败',
+    succes: '创建项目完成',
+    deleteDirectoryFail: '删除目录失败',
+    choices: ['否', '是'],
+};
+
+/**
+ * @description: 
+ * @param {type} 
+ * @return: 
+ */
+function output(msg = '', color = 'white'){
+    console.log(chalk[color](msg));
+}
+
+/**
+ * @description: 下载模板文件
+ * @param {String} url
+ * @param {String} projectName
+ * @return: 
+ */
+function down(){
+    download(url, projectName, err => {
+        if(err){
+            spinner.fail();
+            output(`${msg.fail}：${err}`, 'red');
+        } else{
+            spinner.succeed();
+            output(msg.succes, 'green');
+        }
+    });
+}
+
+/**
+ * @description: 目录是否已经存在
+ * @param {String} dir 
+ * @return: {Boolean}
+ */
+function isDirectory(dir = ''){
+    let state;
+    try{
+        state = fs.existsSync(dir);
+    } catch(e){
+        state = false;
+    }
+    return state;
+}
+
+/**
+ * @description: 选择是否覆盖已存在的目录
+ * @param {type} 
+ * @return: 
+ */
+async function prompt(){
+    let question = [{
+        type: 'list',
+        name: 'overwrite',
+        message: chalk.green(msg.directoryExist),
+        choices: msg.choices,
+        default: '1',
+    }];
+    let {overwrite} = await inquirer.prompt(question);
+    return overwrite;
+}
+
+/**
+ * @description: 开始构建项目
+ * @param {type} 
+ * @return: 
+ */
+function build(){
+    output(msg.start, 'green');
+    spinner.start(chalk.green(msg.buliding));
+    down();
+}
+
+/**
+ * @description: 初始化
+ * @param {type} 
+ * @return: 
+ */
+async function init(){
+    program.parse(process.argv);
+    [projectName = '', url = defaultTpl] = Object.values({...program.args});
+    if(!projectName){
+        output(msg.nameIsEmpty, 'red');
+    } else{
+        let dir = path.join(process.env.PWD, `./${projectName}`);
+        if(isDirectory(dir)){
+            let result = await prompt();
+            if(result === msg.choices[1]){
+                rimraf(dir, (err) => {
+                    if(err){
+                        output(`${msg.deleteDirectoryFail}：${err}`, 'red');
+                    } else{
+                        build();
+                    }
+                });
+            }
+        } else{
+            build();
+        }
+    }
+}
+
+//
+init();
