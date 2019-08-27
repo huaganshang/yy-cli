@@ -16,5 +16,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "zhaiyba@yonyou.com",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huaganshang/yy-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/huaganshang/yy-cli/issues"
+  },
+  "homepage": "https://github.com/huaganshang/yy-cli#readme"
 }
